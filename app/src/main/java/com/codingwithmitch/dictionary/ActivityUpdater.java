@@ -9,4 +9,6 @@ public interface ActivityUpdater {
     void gotWords(ArrayList<Word> words);
 
     void deletedWords(int[] rows);
+
+    void progressUpdate(int completedAmount, int totalAmount);
 }

@@ -5,21 +5,23 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.codingwithmitch.dictionary.ActivityUpdater;
+import com.codingwithmitch.dictionary.DictionaryActivity;
 import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.persistence.AppDatabase;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class DeleteWordsAsyncTask extends AsyncTask<Word, Void, int[]> {
+public class DeleteWordsAsyncTask extends AsyncTask<Word, Integer, int[]> {
 
     private static final String TAG = "DeleteWordAsyncTask";
 
-    private ActivityUpdater activityUpdater;
+    private WeakReference<ActivityUpdater> activityUpdater;
     private AppDatabase db;
 
     public DeleteWordsAsyncTask(Application application, ActivityUpdater activityUpdater) {
         super();
-        this.activityUpdater = activityUpdater;
+        this.activityUpdater = new WeakReference<>(activityUpdater);
         db = AppDatabase.getDatabase(application);
     }
 
@@ -33,20 +35,21 @@ public class DeleteWordsAsyncTask extends AsyncTask<Word, Void, int[]> {
     @Override
     protected int[] doInBackground(Word... words) {
 
-        // Done on background thread
         return deleteWordsAsync(words);
     }
 
     @Override
-    protected void onProgressUpdate(Void... values) {
-        super.onProgressUpdate(values);
+    protected void onProgressUpdate(Integer... progressValues) {
+        super.onProgressUpdate(progressValues);
         // Executed on UI Thread
+
+        activityUpdater.get().progressUpdate(progressValues[0], progressValues[1]);
     }
 
     @Override
     protected void onPostExecute(int[] rows) {
         super.onPostExecute(rows);
-        activityUpdater.deletedWords(rows);
+        activityUpdater.get().deletedWords(rows);
     }
 
     private int[] deleteWordsAsync(Word... words){
@@ -54,8 +57,11 @@ public class DeleteWordsAsyncTask extends AsyncTask<Word, Void, int[]> {
 
         int[] rows = new int[words.length];
         for(int i = 0; i < rows.length; i++){
+            Integer[] progressUpdate = {i + 1, rows.length};
+            onProgressUpdate(progressUpdate);
             rows[i] = db.wordDataDao().delete(words[i]);
         }
+
         return rows;
     }
 

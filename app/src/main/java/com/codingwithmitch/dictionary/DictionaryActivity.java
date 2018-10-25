@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
@@ -51,6 +52,8 @@ public class DictionaryActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        restoreInstanceState(savedInstanceState);
+
         setContentView(R.layout.activity_dictionary);
         mRecyclerView = findViewById(R.id.recyclerView);
         mFab = findViewById(R.id.fab);
@@ -61,6 +64,19 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         setupRecyclerView();
     }
+
+    private void restoreInstanceState(Bundle savedInstanceState){
+        if(savedInstanceState != null){
+            mWords = savedInstanceState.getParcelableArrayList("words");
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("words", mWords);
+        super.onSaveInstanceState(outState);
+    }
+
 
     @Override
     public void gotWords(ArrayList<Word> words) {
@@ -79,15 +95,21 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     @Override
     public void deletedWords(int[] rows) {
-        Log.d(TAG, "deletedWords: successfully deleted rows: ");
         for(int row: rows){
             Log.d(TAG, "deletedWords: row: " + row);
         }
     }
 
+    @Override
+    public void progressUpdate(int completedAmount, int totalAmount) {
+        String percentageCompleted = String.valueOf(((double)completedAmount / (double)totalAmount) * 100);
+        Log.d(TAG, "progressUpdate: " + percentageCompleted + "%");
+    }
+
 
     @Override
     protected void onStart() {
+        Log.d(TAG, "onStart: called.");
         super.onStart();
         if(mWords.size() == 0){
             retrieveWords();
@@ -97,7 +119,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        Log.d(TAG, "onDestroy: called.");
     }
 
 

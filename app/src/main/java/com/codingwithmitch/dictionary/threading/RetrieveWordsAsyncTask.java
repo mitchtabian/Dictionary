@@ -8,18 +8,19 @@ import com.codingwithmitch.dictionary.ActivityUpdater;
 import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.persistence.AppDatabase;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class RetrieveWordsAsyncTask extends AsyncTask<Void, Void, ArrayList<Word>> {
 
     private static final String TAG = "RetrieveWordsAsyncTask";
 
-    private ActivityUpdater activityUpdater;
+    private WeakReference<ActivityUpdater> activityUpdater;
     private AppDatabase db;
 
     public RetrieveWordsAsyncTask(Application application, ActivityUpdater activityUpdater) {
         super();
-        this.activityUpdater = activityUpdater;
+        this.activityUpdater = new WeakReference<>(activityUpdater);
         db = AppDatabase.getDatabase(application);
     }
 
@@ -46,7 +47,7 @@ public class RetrieveWordsAsyncTask extends AsyncTask<Void, Void, ArrayList<Word
     @Override
     protected void onPostExecute(ArrayList<Word> words) {
         super.onPostExecute(words);
-        activityUpdater.gotWords(words);
+        activityUpdater.get().gotWords(words);
     }
 
     private ArrayList<Word> retrieveWordsAsync(){
