@@ -7,6 +7,7 @@ import android.util.Log;
 import com.codingwithmitch.dictionary.ActivityUpdater;
 import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.persistence.AppDatabase;
+import com.codingwithmitch.dictionary.util.Utility;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
