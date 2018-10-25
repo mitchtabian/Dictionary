@@ -4,6 +4,8 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -23,11 +25,13 @@ import android.widget.RelativeLayout;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.persistence.AppDatabase;
 import com.codingwithmitch.dictionary.threading.MyThread;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
@@ -47,7 +51,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private Handler mMainThreadHandler = null;
-    private MyThread mBackgroundThread;
+    private HandlerThread mBackgroundThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +72,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         if(mBackgroundThread == null){
-            mBackgroundThread = new MyThread(this, mMainThreadHandler);
+            mBackgroundThread = new HandlerThread("DictionaryActivity Background Thread");
             mBackgroundThread.start();
         }
         if(mWords.size() == 0){
@@ -80,16 +84,38 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         if(mBackgroundThread != null){
-            mBackgroundThread.quitThread();
+            mBackgroundThread.quit();
         }
     }
 
 
     private void retrieveWords() {
         Log.d(TAG, "retrieveWords: called.");
-        Message message = Message.obtain(null, Constants.WORDS_RETRIEVE);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        Handler handler = new Handler(mBackgroundThread.getLooper());
+        handler.post(retrieveWordsRunnable);
     }
+
+    private Runnable retrieveWordsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "run: retrieving notes. This is from thread: " + Looper.myLooper().getThread().getName());
+            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+            List<Word> tempWords = new ArrayList<>(db.wordDataDao().getAllWords());
+            ArrayList<Word> words = new ArrayList<>(tempWords);
+
+            Message message = null;
+            if(words.size() > 0){
+                message = Message.obtain(null, Constants.WORDS_RETRIEVE_SUCCESS);
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList("words_retrieve", words);
+                message.setData(bundle);
+            }
+            else{
+                message = Message.obtain(null, Constants.WORDS_RETRIEVE_FAIL);
+            }
+            mMainThreadHandler.sendMessage(message);
+        }
+    };
 
 
     public void deleteWord(Word word) {
@@ -98,12 +124,39 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-        Message message = Message.obtain(null, Constants.WORD_DELETE);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("word_delete", word);
-        message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        Handler handler = new Handler(mBackgroundThread.getLooper());
+        DeleteWordRunnable deleteWordRunnable = new DeleteWordRunnable(word);
+        handler.post(deleteWordRunnable);
     }
+
+    /**
+     *  Need to create a class for this because it references a note to delete
+     */
+    private class DeleteWordRunnable implements Runnable{
+
+        private Word word;
+
+        public DeleteWordRunnable(Word word) {
+            this.word = word;
+        }
+
+        @Override
+        public void run() {
+            Log.d(TAG, "run: deleting word on thread: " + Looper.myLooper().getThread().getName());
+            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+            Message message = null;
+            if(db.wordDataDao().delete(word) > 0){
+                message = Message.obtain(null, Constants.WORD_DELETE_SUCCESS);
+            }
+            else{
+                message = Message.obtain(null, Constants.WORD_DELETE_FAIL);
+            }
+
+            mMainThreadHandler.sendMessage(message);
+        }
+    }
+
+
 
     private void setupRecyclerView(){
         Log.d(TAG, "setupRecyclerView: called.");
