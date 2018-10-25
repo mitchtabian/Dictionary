@@ -48,6 +48,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private Handler mMainThreadHandler = null;
     private MyThread mBackgroundThread;
+	private String mSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,7 +166,7 @@ public class DictionaryActivity extends AppCompatActivity implements
 
                 ArrayList<Word> words = new ArrayList<>(msg.getData().<Word>getParcelableArrayList("words_retrieve"));
                 mWords.addAll(words);
-                mWordRecyclerAdapter.notifyDataSetChanged();
+                mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
                 break;
             }
 
@@ -223,6 +224,7 @@ public class DictionaryActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
+                mSearchQuery = query;
                 mWordRecyclerAdapter.getFilter().filter(query);
                 return false;
             }
@@ -230,6 +232,7 @@ public class DictionaryActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextChange(String query) {
                 // filter recycler view when text is changed
+                mSearchQuery = query;
                 mWordRecyclerAdapter.getFilter().filter(query);
                 return false;
             }
