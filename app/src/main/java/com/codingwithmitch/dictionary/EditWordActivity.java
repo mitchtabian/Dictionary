@@ -2,10 +2,7 @@ package com.codingwithmitch.dictionary;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -22,8 +19,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingwithmitch.dictionary.models.Word;
-import com.codingwithmitch.dictionary.threading.MyThread;
-import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.LinedEditText;
 import com.codingwithmitch.dictionary.util.Utility;
 
@@ -32,8 +27,7 @@ public class EditWordActivity extends AppCompatActivity implements
         View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
-        TextWatcher,
-        Handler.Callback
+        TextWatcher
 {
 
     private static final String TAG = "NoteActivity";
@@ -54,8 +48,7 @@ public class EditWordActivity extends AppCompatActivity implements
     private boolean mIsNewWord = false;
     private Word mWordInitial = new Word();
     private Word mWordFinal = new Word();
-    private MyThread mBackgroundThread = null;
-    private Handler mMainThreadHandler = null;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,27 +70,8 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
-        mMainThreadHandler = new Handler(this);
 
         getSupportActionBar().hide();
-    }
-
-
-    @Override
-    protected void onStart() {
-        if(mBackgroundThread == null){
-            mBackgroundThread = new MyThread(this, mMainThreadHandler);
-            mBackgroundThread.start();
-        }
-        super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(mBackgroundThread != null){
-            mBackgroundThread.quitThread();
-        }
     }
 
     @Override
@@ -122,19 +96,11 @@ public class EditWordActivity extends AppCompatActivity implements
     }
 
     public void saveNewNote() {
-        Message message = Message.obtain(null, Constants.WORD_INSERT_NEW);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("word_new", mWordFinal);
-        message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+
     }
 
     public void updateNote() {
-        Message message = Message.obtain(null, Constants.WORD_UPDATE);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("word_update", mWordFinal);
-        message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+
     }
 
 
@@ -371,33 +337,6 @@ public class EditWordActivity extends AppCompatActivity implements
     @Override
     public void afterTextChanged(Editable s) {
 
-    }
-
-
-    @Override
-    public boolean handleMessage(Message msg) {
-        switch (msg.what){
-
-            case Constants.WORD_INSERT_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully inserted a new word. This is from thread: " + getMainLooper().getThread().getName());
-
-                break;
-            }
-            case Constants.WORD_INSERT_FAIL:{
-                Log.d(TAG, "handleMessage: unable to insert a word. This is from thread: " + getMainLooper().getThread().getName());
-                break;
-            }
-            case Constants.WORD_UPDATE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully updated a word. This is from thread: " + getMainLooper().getThread().getName());
-
-                break;
-            }
-            case Constants.WORD_UPDATE_FAIL:{
-                Log.d(TAG, "handleMessage: unable to update a word. This is from thread: " + getMainLooper().getThread().getName());
-                break;
-            }
-        }
-        return true;
     }
 }
 
