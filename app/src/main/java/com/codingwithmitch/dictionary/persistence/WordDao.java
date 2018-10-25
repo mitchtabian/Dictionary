@@ -24,8 +24,8 @@ public interface WordDao {
     @Query("UPDATE Word SET title = :title, content = :content, timestamp = :timestamp WHERE uid = :uid")
     int updateWord(String title, String content, String timestamp, int uid);
 
-    @Query("SELECT * FROM Word LIMIT :row, 2 ")
-    public List<Word> getSomeWords(int row);
+    @Query("SELECT * FROM Word LIMIT :row, :numRows ")
+    public List<Word> getSomeWords(int row, int numRows);
 
     @Query("SELECT COUNT(*) FROM Word")
     public Integer getNumRows();
