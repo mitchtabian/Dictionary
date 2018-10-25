@@ -45,6 +45,7 @@ public class MyThread extends Thread {
 
     public void quitThread(){
         isRunning = false;
+        mMainThreadHandler = null;
     }
 
     private long[] saveNewWord(Word word){
