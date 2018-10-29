@@ -79,6 +79,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     }
 
     private void sendTestMessageToThread(){
+        Log.d(TAG, "sendTestMessageToThread: sending message from thread: " + Thread.currentThread().getName());
         Message message = Message.obtain(null, Constants.WORD_INSERT_NEW);
         mMyThread.sendMessageToBackgroundThread(message);
     }
