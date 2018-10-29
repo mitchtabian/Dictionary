@@ -3,6 +3,8 @@ package com.codingwithmitch.dictionary;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.threading.MyThread;
+import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.LinedEditText;
 import com.codingwithmitch.dictionary.util.Utility;
 
@@ -27,7 +31,8 @@ public class EditWordActivity extends AppCompatActivity implements
         View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
-        TextWatcher
+        TextWatcher,
+        Handler.Callback
 {
 
     private static final String TAG = "NoteActivity";
@@ -48,6 +53,8 @@ public class EditWordActivity extends AppCompatActivity implements
     private boolean mIsNewWord = false;
     private Word mWordInitial = new Word();
     private Word mWordFinal = new Word();
+    private MyThread mMyThread;
+    private Handler mMainThreadHandler = null;
 
 
     @Override
@@ -71,8 +78,29 @@ public class EditWordActivity extends AppCompatActivity implements
         mEditTitle.addTextChangedListener(this);
 
 
+        mMainThreadHandler = new Handler(this);
+
         getSupportActionBar().hide();
     }
+
+
+    @Override
+    protected void onStart() {
+        if(mMyThread == null){
+            mMyThread = new MyThread(this, mMainThreadHandler);
+            mMyThread.start();
+        }
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mMyThread != null){
+            mMyThread.quitThread();
+        }
+    }
+
 
     @Override
     protected void onResume() {
@@ -337,6 +365,32 @@ public class EditWordActivity extends AppCompatActivity implements
     @Override
     public void afterTextChanged(Editable s) {
 
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what){
+
+            case Constants.WORD_INSERT_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully inserted a new word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_INSERT_FAIL:{
+                Log.d(TAG, "handleMessage: unable to insert a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+            case Constants.WORD_UPDATE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully updated a word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_UPDATE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to update a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+        }
+        return true;
     }
 }
 

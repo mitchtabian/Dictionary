@@ -25,6 +25,8 @@ import com.codingwithmitch.dictionary.threading.MyThread;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -232,6 +234,7 @@ public class DictionaryActivity extends AppCompatActivity implements
 
             case Constants.WORDS_RETRIEVE_SUCCESS:{
                 Log.d(TAG, "handleMessage: successfully retrieved notes. This is from thread: " + Thread.currentThread().getName());
+
 
                 break;
             }
