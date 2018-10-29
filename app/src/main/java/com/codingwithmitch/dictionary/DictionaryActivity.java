@@ -3,6 +3,7 @@ package com.codingwithmitch.dictionary;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -31,7 +32,8 @@ import java.util.Arrays;
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener
+        SwipeRefreshLayout.OnRefreshListener,
+        Handler.Callback
 {
 
     private static final String TAG = "WordsListActivity";
@@ -46,6 +48,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private MyThread mMyThread;
+    private Handler mMainThreadHandler;
 
 
     @Override
@@ -61,6 +64,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
+        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -95,7 +99,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         Log.d(TAG, "onStart: called.");
         super.onStart();
         if(mMyThread == null){
-            mMyThread = new MyThread();
+            mMyThread = new MyThread(mMainThreadHandler);
             mMyThread.start();
         }
         if(mWords.size() == 0){
@@ -213,7 +217,50 @@ public class DictionaryActivity extends AppCompatActivity implements
         retrieveWords();
         mSwipeRefresh.setRefreshing(false);
     }
-    
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what){
+
+            case Constants.WORDS_RETRIEVE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully retrieved notes. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORDS_RETRIEVE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to retrieve words. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_INSERT_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully inserted new word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_INSERT_FAIL:{
+                Log.d(TAG, "handleMessage: unable to insert new word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_DELETE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully deleted a word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_DELETE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to delete word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+        }
+        return true;
+    }
 }
 
 
