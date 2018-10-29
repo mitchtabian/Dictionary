@@ -3,6 +3,7 @@ package com.codingwithmitch.dictionary;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,8 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.threading.MyThread;
+import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
+    private MyThread mMyThread;
 
 
     @Override
@@ -74,11 +78,25 @@ public class DictionaryActivity extends AppCompatActivity implements
         super.onSaveInstanceState(outState);
     }
 
+    private void sendTestMessageToThread(){
+        Message message = Message.obtain(null, Constants.WORD_INSERT_NEW);
+        mMyThread.sendMessageToBackgroundThread(message);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sendTestMessageToThread();
+    }
 
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
+        if(mMyThread == null){
+            mMyThread = new MyThread();
+            mMyThread.start();
+        }
         if(mWords.size() == 0){
             retrieveWords();
         }
