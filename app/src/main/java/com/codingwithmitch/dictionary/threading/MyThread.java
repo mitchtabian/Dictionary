@@ -22,12 +22,19 @@ public class MyThread extends Thread {
     }
 
     public void sendMessageToBackgroundThread(Message message){
-        try{
-            mMyThreadHandler.sendMessage(message);
-        }catch (NullPointerException e){
-            Log.e(TAG, "sendMessageToBackgroundThread: null pointer: " + e.getMessage() );
+        while(true){
+            try{
+                mMyThreadHandler.sendMessage(message);
+                break;
+            }catch (NullPointerException e){
+                Log.e(TAG, "sendMessageToBackgroundThread: null pointer: " + e.getMessage() );
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
-
     }
 
     class MyThreadHandler extends Handler {
