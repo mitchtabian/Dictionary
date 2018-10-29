@@ -108,6 +108,14 @@ public class DictionaryActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if(mMyThread != null){
+            mMyThread.quitThread();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy: called.");

@@ -15,16 +15,25 @@ public class MyThread extends Thread {
 
     private MyThreadHandler mMyThreadHandler = null;
     private Handler mMainThreadHandler = null;
+    private boolean isRunning = false;
 
     public MyThread(Handler mMainThreadHandler) {
         this.mMainThreadHandler = mMainThreadHandler;
+        isRunning = true;
     }
 
     @Override
     public void run() {
-        Looper.prepare();
-        mMyThreadHandler = new MyThreadHandler(Looper.myLooper());
-        Looper.loop();
+        if(isRunning){
+            Looper.prepare();
+            mMyThreadHandler = new MyThreadHandler(Looper.myLooper());
+            Looper.loop();
+        }
+    }
+
+    public void quitThread(){
+        isRunning = false;
+        mMainThreadHandler = null;
     }
 
     public void sendMessageToBackgroundThread(Message message){
