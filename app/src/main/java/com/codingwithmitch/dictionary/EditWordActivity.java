@@ -35,7 +35,7 @@ public class EditWordActivity extends AppCompatActivity implements
         Handler.Callback
 {
 
-    private static final String TAG = "NoteActivity";
+    private static final String TAG = "EditWordActivity";
     private static final int EDIT_MODE_ENABLED = 1;
     private static final int EDIT_MODE_DISABLED = 0;
 
@@ -106,39 +106,39 @@ public class EditWordActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         if(getIncomingIntent()){
-            setNoteProperties();
+            setWordProperties();
             disableContentInteraction();
         }
         else{
-            setNewNoteProperties();
+            setNewWordProperties();
             enableEditMode();
         }
     }
 
     private void saveChanges(){
         if(mIsNewWord){
-            saveNewNote();
+            saveNewWord();
         }else{
-            updateNote();
+            updateWord();
         }
     }
 
-    public void saveNewNote() {
-
+    public void saveNewWord() {
+        
     }
 
-    public void updateNote() {
-
+    public void updateWord() {
+        
     }
 
 
-    private void setNewNoteProperties(){
+    private void setNewWordProperties(){
         mViewTitle.setText("Word");
         mEditTitle.setText("Word");
         appendNewLines();
     }
 
-    private void setNoteProperties(){
+    private void setWordProperties(){
         mViewTitle.setText(mWordInitial.getTitle());
         mEditTitle.setText(mWordInitial.getTitle());
         mLinedEditText.setText(mWordInitial.getContent());
