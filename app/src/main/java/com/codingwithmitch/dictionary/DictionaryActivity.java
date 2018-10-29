@@ -99,7 +99,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         Log.d(TAG, "onStart: called.");
         super.onStart();
         if(mMyThread == null){
-            mMyThread = new MyThread(mMainThreadHandler);
+            mMyThread = new MyThread(this, mMainThreadHandler);
             mMyThread.start();
         }
         if(mWords.size() == 0){
