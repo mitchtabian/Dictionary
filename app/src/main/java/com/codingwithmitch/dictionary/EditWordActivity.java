@@ -35,7 +35,7 @@ public class EditWordActivity extends AppCompatActivity implements
         Handler.Callback
 {
 
-    private static final String TAG = "NoteActivity";
+    private static final String TAG = "EditWordActivity";
     private static final int EDIT_MODE_ENABLED = 1;
     private static final int EDIT_MODE_DISABLED = 0;
 
@@ -77,7 +77,6 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
-
         mMainThreadHandler = new Handler(this);
 
         getSupportActionBar().hide();
@@ -86,59 +85,54 @@ public class EditWordActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-        if(mMyThread == null){
-            mMyThread = new MyThread(this, mMainThreadHandler);
-            mMyThread.start();
-        }
         super.onStart();
+        mMyThread = new MyThread(this, mMainThreadHandler);
+        mMyThread.start();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(mMyThread != null){
-            mMyThread.quitThread();
-        }
+        mMyThread.quitThread();
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
         if(getIncomingIntent()){
-            setNoteProperties();
+            setWordProperties();
             disableContentInteraction();
         }
         else{
-            setNewNoteProperties();
+            setNewWordProperties();
             enableEditMode();
         }
     }
 
     private void saveChanges(){
         if(mIsNewWord){
-            saveNewNote();
+            saveNewWord();
         }else{
-            updateNote();
+            updateWord();
         }
     }
 
-    public void saveNewNote() {
+    public void saveNewWord() {
 
     }
 
-    public void updateNote() {
+    public void updateWord() {
 
     }
 
 
-    private void setNewNoteProperties(){
+    private void setNewWordProperties(){
         mViewTitle.setText("Word");
         mEditTitle.setText("Word");
         appendNewLines();
     }
 
-    private void setNoteProperties(){
+    private void setWordProperties(){
         mViewTitle.setText(mWordInitial.getTitle());
         mEditTitle.setText(mWordInitial.getTitle());
         mLinedEditText.setText(mWordInitial.getContent());
@@ -392,5 +386,6 @@ public class EditWordActivity extends AppCompatActivity implements
         }
         return true;
     }
+
 }
 
