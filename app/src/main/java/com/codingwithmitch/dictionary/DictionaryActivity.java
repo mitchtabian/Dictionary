@@ -34,7 +34,8 @@ import java.util.Arrays;
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener
+        SwipeRefreshLayout.OnRefreshListener,
+        Handler.Callback
 {
 
     private static final String TAG = "DictionaryActivity";
@@ -49,6 +50,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private MyThread mMyThread;
+    private Handler mMainThreadHandler;
 
 
     @Override
@@ -63,6 +65,8 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
+
+        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -90,7 +94,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        mMyThread = new MyThread();
+        mMyThread = new MyThread(mMainThreadHandler);
         mMyThread.start();
     }
 
@@ -232,6 +236,50 @@ public class DictionaryActivity extends AppCompatActivity implements
         mSwipeRefresh.setRefreshing(false);
     }
 
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what){
+
+            case Constants.WORDS_RETRIEVE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully retrieved words. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORDS_RETRIEVE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to retrieve words. This is from thread: " + Thread.currentThread().getName());
+
+                clearWords();
+                break;
+            }
+
+            case Constants.WORD_INSERT_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully inserted new word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_INSERT_FAIL:{
+                Log.d(TAG, "handleMessage: unable to insert new word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_DELETE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully deleted a word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+            case Constants.WORD_DELETE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to delete word. This is from thread: " + Thread.currentThread().getName());
+
+                break;
+            }
+
+        }
+        return true;
+    }
 }
 
 

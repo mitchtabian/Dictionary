@@ -14,6 +14,11 @@ public class MyThread extends Thread {
     private static final String TAG = "MyThread";
 
     private MyThreadHandler mMyThreadHandler = null;
+    private Handler mMainThreadHandler = null;
+
+    public MyThread(Handler mMainThreadHandler) {
+        this.mMainThreadHandler = mMainThreadHandler;
+    }
 
     @Override
     public void run() {
@@ -52,12 +57,18 @@ public class MyThread extends Thread {
                 case Constants.WORD_INSERT_NEW:{
                     Log.d(TAG, "handleMessage: saving word on thread: " + Thread.currentThread().getName());
 
+//                    Message message = Message.obtain(mMainThreadHandler, Constants.WORDS_RETRIEVE_SUCCESS);
+//                    message.sendToTarget();
+
+                    Message message = Message.obtain(null, Constants.WORDS_RETRIEVE_SUCCESS);
+                    mMainThreadHandler.sendMessage(message);
+
+
                     break;
                 }
 
                 case Constants.WORD_UPDATE:{
                     Log.d(TAG, "handleMessage: updating word on thread: " + Thread.currentThread().getName());
-
 
                     break;
                 }
@@ -65,13 +76,11 @@ public class MyThread extends Thread {
                 case Constants.WORDS_RETRIEVE:{
                     Log.d(TAG, "handleMessage: retrieving words on thread: " + Thread.currentThread().getName());
 
-
                     break;
                 }
 
                 case Constants.WORD_DELETE:{
                     Log.d(TAG, "handleMessage: deleting word on thread: " + Thread.currentThread().getName());
-
 
                     break;
                 }
