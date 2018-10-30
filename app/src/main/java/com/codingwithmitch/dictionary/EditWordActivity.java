@@ -31,7 +31,8 @@ public class EditWordActivity extends AppCompatActivity implements
         View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
-        TextWatcher
+        TextWatcher,
+        Handler.Callback
 {
 
     private static final String TAG = "EditWordActivity";
@@ -52,6 +53,8 @@ public class EditWordActivity extends AppCompatActivity implements
     private boolean mIsNewWord = false;
     private Word mWordInitial = new Word();
     private Word mWordFinal = new Word();
+    private MyThread mMyThread;
+    private Handler mMainThreadHandler = null;
 
 
     @Override
@@ -74,6 +77,8 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
+        mMainThreadHandler = new Handler(this);
+
         getSupportActionBar().hide();
     }
 
@@ -81,12 +86,14 @@ public class EditWordActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
+        mMyThread = new MyThread(mMainThreadHandler);
+        mMyThread.start();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
+        mMyThread.quitThread();
     }
 
     @Override
@@ -354,6 +361,31 @@ public class EditWordActivity extends AppCompatActivity implements
 
     }
 
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what){
+
+            case Constants.WORD_INSERT_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully inserted a new word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_INSERT_FAIL:{
+                Log.d(TAG, "handleMessage: unable to insert a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+            case Constants.WORD_UPDATE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully updated a word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_UPDATE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to update a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+        }
+        return true;
+    }
 
 }
 
