@@ -1,24 +1,19 @@
 package com.codingwithmitch.dictionary.threading;
 
+
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.util.Constants;
+
 
 public class MyThread extends Thread {
 
     private static final String TAG = "MyThread";
 
     private MyThreadHandler mMyThreadHandler = null;
-    private Handler mMainThreadHandler = null;
-
-    public MyThread(Handler mMainThreadHandler) {
-        this.mMainThreadHandler = mMainThreadHandler;
-    }
 
     @Override
     public void run() {
@@ -56,12 +51,6 @@ public class MyThread extends Thread {
 
                 case Constants.WORD_INSERT_NEW:{
                     Log.d(TAG, "handleMessage: saving word on thread: " + Thread.currentThread().getName());
-
-//                    Message message = Message.obtain(mMainThreadHandler, Constants.WORD_INSERT_SUCCESS);
-//                    message.sendToTarget();
-
-                    Message message = Message.obtain(null, Constants.WORD_INSERT_SUCCESS);
-                    mMainThreadHandler.sendMessage(message);
 
                     break;
                 }

@@ -25,6 +25,8 @@ import com.codingwithmitch.dictionary.threading.MyThread;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -32,11 +34,10 @@ import java.util.Arrays;
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener,
-        Handler.Callback
+        SwipeRefreshLayout.OnRefreshListener
 {
 
-    private static final String TAG = "WordsListActivity";
+    private static final String TAG = "DictionaryActivity";
 
     //ui components
     private RecyclerView mRecyclerView;
@@ -48,7 +49,6 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private MyThread mMyThread;
-    private Handler mMainThreadHandler;
 
 
     @Override
@@ -63,8 +63,6 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
-
-        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -89,34 +87,32 @@ public class DictionaryActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        sendTestMessageToThread();
-    }
-
-    @Override
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        if(mMyThread == null){
-            mMyThread = new MyThread(mMainThreadHandler);
-            mMyThread.start();
-        }
-        if(mWords.size() == 0){
-            retrieveWords();
-        }
+        mMyThread = new MyThread();
+        mMyThread.start();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: called.");
+    protected void onStop() {
+        Log.d(TAG, "onStop: called.");
+        super.onStop();
     }
 
 
-    private void retrieveWords() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mSearchQuery.length() > 2){
+            onRefresh();
+        }
+        sendTestMessageToThread();
+    }
+
+    private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
-        mWords.addAll(Arrays.asList(FakeData.words));
+
     }
 
 
@@ -194,16 +190,26 @@ public class DictionaryActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String query) {
                 // filter recycler view when text is changed
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
                 return false;
             }
         });
@@ -211,56 +217,21 @@ public class DictionaryActivity extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    private void clearWords(){
+        if(mWords != null){
+            if(mWords.size() > 0){
+                mWords.clear();
+            }
+        }
+        mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
+    }
 
     @Override
     public void onRefresh() {
-        retrieveWords();
+        retrieveWords(mSearchQuery);
         mSwipeRefresh.setRefreshing(false);
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        switch (msg.what){
-
-            case Constants.WORDS_RETRIEVE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully retrieved notes. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORDS_RETRIEVE_FAIL:{
-                Log.d(TAG, "handleMessage: unable to retrieve words. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_INSERT_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully inserted new word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_INSERT_FAIL:{
-                Log.d(TAG, "handleMessage: unable to insert new word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_DELETE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully deleted a word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_DELETE_FAIL:{
-                Log.d(TAG, "handleMessage: unable to delete word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-        }
-        return true;
-    }
 }
 
 
