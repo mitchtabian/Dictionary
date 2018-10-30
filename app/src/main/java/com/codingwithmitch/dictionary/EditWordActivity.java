@@ -3,6 +3,8 @@ package com.codingwithmitch.dictionary;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.threading.MyThread;
+import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.LinedEditText;
 import com.codingwithmitch.dictionary.util.Utility;
 
@@ -27,10 +31,11 @@ public class EditWordActivity extends AppCompatActivity implements
         View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
-        TextWatcher
+        TextWatcher,
+        Handler.Callback
 {
 
-    private static final String TAG = "NoteActivity";
+    private static final String TAG = "EditWordActivity";
     private static final int EDIT_MODE_ENABLED = 1;
     private static final int EDIT_MODE_DISABLED = 0;
 
@@ -48,6 +53,8 @@ public class EditWordActivity extends AppCompatActivity implements
     private boolean mIsNewWord = false;
     private Word mWordInitial = new Word();
     private Word mWordFinal = new Word();
+    private MyThread mMyThread;
+    private Handler mMainThreadHandler = null;
 
 
     @Override
@@ -70,47 +77,62 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
+        mMainThreadHandler = new Handler(this);
 
         getSupportActionBar().hide();
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mMyThread = new MyThread(mMainThreadHandler);
+        mMyThread.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mMyThread.quitThread();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if(getIncomingIntent()){
-            setNoteProperties();
+            setWordProperties();
             disableContentInteraction();
         }
         else{
-            setNewNoteProperties();
+            setNewWordProperties();
             enableEditMode();
         }
     }
 
     private void saveChanges(){
         if(mIsNewWord){
-            saveNewNote();
+            saveNewWord();
         }else{
-            updateNote();
+            updateWord();
         }
     }
 
-    public void saveNewNote() {
+    public void saveNewWord() {
 
     }
 
-    public void updateNote() {
+    public void updateWord() {
 
     }
 
 
-    private void setNewNoteProperties(){
+    private void setNewWordProperties(){
         mViewTitle.setText("Word");
         mEditTitle.setText("Word");
         appendNewLines();
     }
 
-    private void setNoteProperties(){
+    private void setWordProperties(){
         mViewTitle.setText(mWordInitial.getTitle());
         mEditTitle.setText(mWordInitial.getTitle());
         mLinedEditText.setText(mWordInitial.getContent());
@@ -338,5 +360,32 @@ public class EditWordActivity extends AppCompatActivity implements
     public void afterTextChanged(Editable s) {
 
     }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what){
+
+            case Constants.WORD_INSERT_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully inserted a new word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_INSERT_FAIL:{
+                Log.d(TAG, "handleMessage: unable to insert a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+            case Constants.WORD_UPDATE_SUCCESS:{
+                Log.d(TAG, "handleMessage: successfully updated a word. This is from thread: " + getMainLooper().getThread().getName());
+
+                break;
+            }
+            case Constants.WORD_UPDATE_FAIL:{
+                Log.d(TAG, "handleMessage: unable to update a word. This is from thread: " + getMainLooper().getThread().getName());
+                break;
+            }
+        }
+        return true;
+    }
+
 }
 
