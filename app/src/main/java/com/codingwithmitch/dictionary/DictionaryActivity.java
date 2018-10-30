@@ -111,7 +111,11 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
-
+        Message message = Message.obtain(null, Constants.WORDS_RETRIEVE);
+        Bundle bundle = new Bundle();
+        bundle.putString("title", title);
+        message.setData(bundle);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
 
@@ -121,6 +125,11 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
+        Message message = Message.obtain(null, Constants.WORD_DELETE);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("word_delete", word);
+        message.setData(bundle);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
 
@@ -238,6 +247,11 @@ public class DictionaryActivity extends AppCompatActivity implements
             case Constants.WORDS_RETRIEVE_SUCCESS:{
                 Log.d(TAG, "handleMessage: successfully retrieved words. This is from thread: " + Thread.currentThread().getName());
 
+                clearWords();
+
+                ArrayList<Word> words = new ArrayList<>(msg.getData().<Word>getParcelableArrayList("words_retrieve"));
+                mWords.addAll(words);
+                mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
                 break;
             }
 

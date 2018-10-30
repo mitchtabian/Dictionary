@@ -118,11 +118,19 @@ public class EditWordActivity extends AppCompatActivity implements
     }
 
     public void saveNewWord() {
-
+        Message message = Message.obtain(null, Constants.WORD_INSERT_NEW);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("word_new", mWordFinal);
+        message.setData(bundle);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
     public void updateWord() {
-
+        Message message = Message.obtain(null, Constants.WORD_UPDATE);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("word_update", mWordFinal);
+        message.setData(bundle);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
 
