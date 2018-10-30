@@ -86,7 +86,7 @@ public class EditWordActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        mMyThread = new MyThread(mMainThreadHandler);
+        mMyThread = new MyThread(this, mMainThreadHandler);
         mMyThread.start();
     }
 

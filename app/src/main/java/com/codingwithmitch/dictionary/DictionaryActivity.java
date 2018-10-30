@@ -89,7 +89,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        mMyThread = new MyThread(mMainThreadHandler);
+        mMyThread = new MyThread(this, mMainThreadHandler);
         mMyThread.start();
     }
 
