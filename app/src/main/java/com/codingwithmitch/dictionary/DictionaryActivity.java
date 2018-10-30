@@ -17,26 +17,28 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.threading.MyThread;
 import com.codingwithmitch.dictionary.util.Constants;
+import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
-        Handler.Callback,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener
+        SwipeRefreshLayout.OnRefreshListener,
+        Handler.Callback
 {
 
-    private static final String TAG = "NotesListActivity";
+    private static final String TAG = "DictionaryActivity";
 
     //ui components
     private RecyclerView mRecyclerView;
@@ -46,13 +48,16 @@ public class DictionaryActivity extends AppCompatActivity implements
     private ArrayList<Word> mWords = new ArrayList<>();
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
-    private Handler mMainThreadHandler = null;
-    private MyThread mBackgroundThread;
-	private String mSearchQuery = "";
+    private String mSearchQuery = "";
+    private MyThread mMyThread;
+    private Handler mMainThreadHandler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        restoreInstanceState(savedInstanceState);
+
         setContentView(R.layout.activity_dictionary);
         mRecyclerView = findViewById(R.id.recyclerView);
         mFab = findViewById(R.id.fab);
@@ -60,36 +65,57 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
+
         mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
 
+
+    private void restoreInstanceState(Bundle savedInstanceState){
+        if(savedInstanceState != null){
+            mWords = savedInstanceState.getParcelableArrayList("words");
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("words", mWords);
+        super.onSaveInstanceState(outState);
+    }
+
+
     @Override
     protected void onStart() {
+        Log.d(TAG, "onStart: called.");
         super.onStart();
-        if(mBackgroundThread == null){
-            mBackgroundThread = new MyThread(this, mMainThreadHandler);
-            mBackgroundThread.start();
-        }
-        if(mWords.size() == 0){
-            retrieveWords();
-        }
+        mMyThread = new MyThread(this, mMainThreadHandler);
+        mMyThread.start();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(mBackgroundThread != null){
-            mBackgroundThread.quitThread();
-        }
+    protected void onStop() {
+        Log.d(TAG, "onStop: called.");
+        super.onStop();
+        mMyThread.quitThread();
     }
 
 
-    private void retrieveWords() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mSearchQuery.length() > 2){
+            onRefresh();
+        }
+    }
+
+    private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
         Message message = Message.obtain(null, Constants.WORDS_RETRIEVE);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        Bundle bundle = new Bundle();
+        bundle.putString("title", title);
+        message.setData(bundle);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
 
@@ -103,8 +129,10 @@ public class DictionaryActivity extends AppCompatActivity implements
         Bundle bundle = new Bundle();
         bundle.putParcelable("word_delete", word);
         message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
+
+
 
     private void setupRecyclerView(){
         Log.d(TAG, "setupRecyclerView: called.");
@@ -151,18 +179,75 @@ public class DictionaryActivity extends AppCompatActivity implements
         }
     };
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.dictionary_activity_actions, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView =
+                (SearchView) searchItem.getActionView();
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // listening to search query text change
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // filter recycler view when query submitted
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private void clearWords(){
+        if(mWords != null){
+            if(mWords.size() > 0){
+                mWords.clear();
+            }
+        }
+        mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
+    }
+
+    @Override
+    public void onRefresh() {
+        retrieveWords(mSearchQuery);
+        mSwipeRefresh.setRefreshing(false);
+    }
+
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what){
 
             case Constants.WORDS_RETRIEVE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully retrieved notes. This is from thread: " + Thread.currentThread().getName());
+                Log.d(TAG, "handleMessage: successfully retrieved words. This is from thread: " + Thread.currentThread().getName());
 
-                if(mWords != null){
-                    if(mWords.size() > 0){
-                        mWords.clear();
-                    }
-                }
+                clearWords();
 
                 ArrayList<Word> words = new ArrayList<>(msg.getData().<Word>getParcelableArrayList("words_retrieve"));
                 mWords.addAll(words);
@@ -173,6 +258,7 @@ public class DictionaryActivity extends AppCompatActivity implements
             case Constants.WORDS_RETRIEVE_FAIL:{
                 Log.d(TAG, "handleMessage: unable to retrieve words. This is from thread: " + Thread.currentThread().getName());
 
+                clearWords();
                 break;
             }
 
@@ -202,50 +288,6 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         }
         return true;
-    }
-
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.dictionary_activity_actions, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView =
-                (SearchView) searchItem.getActionView();
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-
-        // listening to search query text change
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // filter recycler view when query submitted
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String query) {
-                // filter recycler view when text is changed
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
-                return false;
-            }
-        });
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-
-    @Override
-    public void onRefresh() {
-        retrieveWords();
-        mSwipeRefresh.setRefreshing(false);
     }
 }
 

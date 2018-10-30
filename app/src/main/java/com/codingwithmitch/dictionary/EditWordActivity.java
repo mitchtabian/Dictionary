@@ -2,7 +2,6 @@ package com.codingwithmitch.dictionary;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,7 +35,7 @@ public class EditWordActivity extends AppCompatActivity implements
         Handler.Callback
 {
 
-    private static final String TAG = "NoteActivity";
+    private static final String TAG = "EditWordActivity";
     private static final int EDIT_MODE_ENABLED = 1;
     private static final int EDIT_MODE_DISABLED = 0;
 
@@ -54,8 +53,9 @@ public class EditWordActivity extends AppCompatActivity implements
     private boolean mIsNewWord = false;
     private Word mWordInitial = new Word();
     private Word mWordFinal = new Word();
-    private MyThread mBackgroundThread = null;
+    private MyThread mMyThread;
     private Handler mMainThreadHandler = null;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,18 +85,26 @@ public class EditWordActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-        if(mBackgroundThread == null){
-            mBackgroundThread = new MyThread(this, mMainThreadHandler);
-            mBackgroundThread.start();
+        if(mMyThread == null){
+            mMyThread = new MyThread(this, mMainThreadHandler);
+            mMyThread.start();
         }
         super.onStart();
     }
 
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if(mMyThread != null){
+//            mMyThread.quitThread();
+//        }
+//    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mBackgroundThread != null){
-            mBackgroundThread.quitThread();
+        if(mMyThread != null){
+            mMyThread.quitThread();
         }
     }
 
@@ -104,47 +112,47 @@ public class EditWordActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         if(getIncomingIntent()){
-            setNoteProperties();
+            setWordProperties();
             disableContentInteraction();
         }
         else{
-            setNewNoteProperties();
+            setNewWordProperties();
             enableEditMode();
         }
     }
 
     private void saveChanges(){
         if(mIsNewWord){
-            saveNewNote();
+            saveNewWord();
         }else{
-            updateNote();
+            updateWord();
         }
     }
 
-    public void saveNewNote() {
+    public void saveNewWord() {
         Message message = Message.obtain(null, Constants.WORD_INSERT_NEW);
         Bundle bundle = new Bundle();
         bundle.putParcelable("word_new", mWordFinal);
         message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
-    public void updateNote() {
+    public void updateWord() {
         Message message = Message.obtain(null, Constants.WORD_UPDATE);
         Bundle bundle = new Bundle();
         bundle.putParcelable("word_update", mWordFinal);
         message.setData(bundle);
-        mBackgroundThread.sendMessageToBackgroundThread(message);
+        mMyThread.sendMessageToBackgroundThread(message);
     }
 
 
-    private void setNewNoteProperties(){
+    private void setNewWordProperties(){
         mViewTitle.setText("Word");
         mEditTitle.setText("Word");
         appendNewLines();
     }
 
-    private void setNoteProperties(){
+    private void setWordProperties(){
         mViewTitle.setText(mWordInitial.getTitle());
         mEditTitle.setText(mWordInitial.getTitle());
         mLinedEditText.setText(mWordInitial.getContent());
@@ -372,7 +380,6 @@ public class EditWordActivity extends AppCompatActivity implements
     public void afterTextChanged(Editable s) {
 
     }
-
 
     @Override
     public boolean handleMessage(Message msg) {
