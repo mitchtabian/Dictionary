@@ -77,7 +77,6 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
-
         mMainThreadHandler = new Handler(this);
 
         getSupportActionBar().hide();
@@ -86,21 +85,16 @@ public class EditWordActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-        if(mMyThread == null){
-            mMyThread = new MyThread(this, mMainThreadHandler);
-            mMyThread.start();
-        }
         super.onStart();
+        mMyThread = new MyThread(this, mMainThreadHandler);
+        mMyThread.start();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(mMyThread != null){
-            mMyThread.quitThread();
-        }
+        mMyThread.quitThread();
     }
-
 
     @Override
     protected void onResume() {
@@ -124,11 +118,11 @@ public class EditWordActivity extends AppCompatActivity implements
     }
 
     public void saveNewWord() {
-        
+
     }
 
     public void updateWord() {
-        
+
     }
 
 
@@ -392,5 +386,6 @@ public class EditWordActivity extends AppCompatActivity implements
         }
         return true;
     }
+
 }
 
