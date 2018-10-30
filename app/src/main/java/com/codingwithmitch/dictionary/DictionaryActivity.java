@@ -19,10 +19,11 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
-import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
+
+
 import java.util.ArrayList;
-import java.util.Arrays;
+
 
 
 public class DictionaryActivity extends AppCompatActivity implements
@@ -31,7 +32,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         SwipeRefreshLayout.OnRefreshListener
 {
 
-    private static final String TAG = "WordsListActivity";
+    private static final String TAG = "DictionaryActivity";
 
     //ui components
     private RecyclerView mRecyclerView;
@@ -57,7 +58,6 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
-
         setupRecyclerView();
     }
 
@@ -79,21 +79,26 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        if(mWords.size() == 0){
-            retrieveWords();
-        }
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: called.");
+    protected void onStop() {
+        Log.d(TAG, "onStop: called.");
+        super.onStop();
     }
 
 
-    private void retrieveWords() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mSearchQuery.length() > 2){
+            onRefresh();
+        }
+    }
+
+    private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
-        mWords.addAll(Arrays.asList(FakeData.words));
+
     }
 
 
@@ -171,16 +176,26 @@ public class DictionaryActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String query) {
                 // filter recycler view when text is changed
-                mSearchQuery = query;
-                mWordRecyclerAdapter.getFilter().filter(query);
+                if(query.length() > 2){
+                    mSearchQuery = query;
+                    retrieveWords(mSearchQuery);
+                }
+                else{
+                    clearWords();
+                }
                 return false;
             }
         });
@@ -188,13 +203,21 @@ public class DictionaryActivity extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    private void clearWords(){
+        if(mWords != null){
+            if(mWords.size() > 0){
+                mWords.clear();
+            }
+        }
+        mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
+    }
 
     @Override
     public void onRefresh() {
-        retrieveWords();
+        retrieveWords(mSearchQuery);
         mSwipeRefresh.setRefreshing(false);
     }
-    
+
 }
 
 

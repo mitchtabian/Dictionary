@@ -3,6 +3,8 @@ package com.codingwithmitch.dictionary;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.LinedEditText;
 import com.codingwithmitch.dictionary.util.Utility;
 
@@ -30,7 +33,7 @@ public class EditWordActivity extends AppCompatActivity implements
         TextWatcher
 {
 
-    private static final String TAG = "NoteActivity";
+    private static final String TAG = "EditWordActivity";
     private static final int EDIT_MODE_ENABLED = 1;
     private static final int EDIT_MODE_DISABLED = 0;
 
@@ -70,47 +73,58 @@ public class EditWordActivity extends AppCompatActivity implements
         mLinedEditText.setOnTouchListener(this);
         mEditTitle.addTextChangedListener(this);
 
-
         getSupportActionBar().hide();
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if(getIncomingIntent()){
-            setNoteProperties();
+            setWordProperties();
             disableContentInteraction();
         }
         else{
-            setNewNoteProperties();
+            setNewWordProperties();
             enableEditMode();
         }
     }
 
     private void saveChanges(){
         if(mIsNewWord){
-            saveNewNote();
+            saveNewWord();
         }else{
-            updateNote();
+            updateWord();
         }
     }
 
-    public void saveNewNote() {
+    public void saveNewWord() {
 
     }
 
-    public void updateNote() {
+    public void updateWord() {
 
     }
 
 
-    private void setNewNoteProperties(){
+    private void setNewWordProperties(){
         mViewTitle.setText("Word");
         mEditTitle.setText("Word");
         appendNewLines();
     }
 
-    private void setNoteProperties(){
+    private void setWordProperties(){
         mViewTitle.setText(mWordInitial.getTitle());
         mEditTitle.setText(mWordInitial.getTitle());
         mLinedEditText.setText(mWordInitial.getContent());
@@ -338,5 +352,7 @@ public class EditWordActivity extends AppCompatActivity implements
     public void afterTextChanged(Editable s) {
 
     }
+
+
 }
 
