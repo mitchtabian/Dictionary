@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -49,7 +50,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
-
+    private HandlerThread mHandlerThread;
 
 
     @Override
@@ -87,14 +88,16 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-
+        mHandlerThread = new HandlerThread("DictionaryActivity HandlerThread");
+        mHandlerThread.start();
     }
 
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop: called.");
         super.onStop();
-
+        mHandlerThread.quit();
+//        mHandlerThread.quitSafely();
     }
 
 
@@ -118,7 +121,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-        
+
     }
 
 
