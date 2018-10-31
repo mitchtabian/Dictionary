@@ -49,8 +49,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
-    private MyThread mMyThread;
-    private Handler mMainThreadHandler;
+
 
 
     @Override
@@ -66,7 +65,6 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
-        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -89,15 +87,14 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        mMyThread = new MyThread(this, mMainThreadHandler);
-        mMyThread.start();
+
     }
 
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop: called.");
         super.onStop();
-        mMyThread.quitThread();
+
     }
 
 
@@ -111,11 +108,7 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
-        Message message = Message.obtain(null, Constants.WORDS_RETRIEVE);
-        Bundle bundle = new Bundle();
-        bundle.putString("title", title);
-        message.setData(bundle);
-        mMyThread.sendMessageToBackgroundThread(message);
+
     }
 
 
@@ -125,11 +118,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-        Message message = Message.obtain(null, Constants.WORD_DELETE);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("word_delete", word);
-        message.setData(bundle);
-        mMyThread.sendMessageToBackgroundThread(message);
+        
     }
 
 
