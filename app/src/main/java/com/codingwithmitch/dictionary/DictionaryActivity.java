@@ -19,11 +19,12 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 
 
 import java.util.ArrayList;
-
+import java.util.Arrays;
 
 
 public class DictionaryActivity extends AppCompatActivity implements
@@ -79,6 +80,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
+        retrieveWords("");
     }
 
     @Override
@@ -98,7 +100,7 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
-
+        mWords.addAll(Arrays.asList(FakeData.words));
     }
 
 
