@@ -9,17 +9,15 @@ import com.codingwithmitch.dictionary.persistence.AppDatabase;
 
 import java.util.ArrayList;
 
-public class DeleteWordAsyncTask extends AsyncTask<Void, Void, Integer> {
+public class DeleteWordAsyncTask extends AsyncTask<Word, Void, Integer> {
 
     private static final String TAG = "DeleteWordAsyncTask";
 
     private AppDatabase mDb;
-    private Word mWord;
 
-    public DeleteWordAsyncTask(Context context, Word word) {
+    public DeleteWordAsyncTask(Context context) {
         super();
         mDb = AppDatabase.getDatabase(context);
-        mWord = word;
     }
 
     @Override
@@ -29,11 +27,11 @@ public class DeleteWordAsyncTask extends AsyncTask<Void, Void, Integer> {
     }
 
     @Override
-    protected Integer doInBackground(Void... voids) {
+    protected Integer doInBackground(Word... words) {
 
         // Done on background thread
 
-        return deleteWord();
+        return deleteWord(words[0]);
     }
 
     @Override
@@ -48,9 +46,9 @@ public class DeleteWordAsyncTask extends AsyncTask<Void, Void, Integer> {
         // Executed on UI Thread
     }
 
-    private Integer deleteWord(){
+    private Integer deleteWord(Word word){
         Log.d(TAG, "deleteWord: deleting word. This is from thread: " + Thread.currentThread().getName());
-        return mDb.wordDataDao().delete(mWord);
+        return mDb.wordDataDao().delete(word);
     }
 
 }

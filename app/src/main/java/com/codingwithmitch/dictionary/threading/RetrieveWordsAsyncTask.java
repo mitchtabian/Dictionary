@@ -9,17 +9,15 @@ import com.codingwithmitch.dictionary.persistence.AppDatabase;
 
 import java.util.ArrayList;
 
-public class RetrieveWordsAsyncTask extends AsyncTask<Void, Void, ArrayList<Word>> {
+public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Word>> {
 
     private static final String TAG = "RetrieveWordsAsyncTask";
 
     private AppDatabase mDb;
-    private String mQuery;
 
-    public RetrieveWordsAsyncTask(Context context, String query) {
+    public RetrieveWordsAsyncTask(Context context) {
         super();
         mDb = AppDatabase.getDatabase(context);
-        mQuery = query;
     }
 
     @Override
@@ -29,10 +27,10 @@ public class RetrieveWordsAsyncTask extends AsyncTask<Void, Void, ArrayList<Word
     }
 
     @Override
-    protected ArrayList<Word> doInBackground(Void... voids) {
+    protected ArrayList<Word> doInBackground(String... strings) {
 
         // Done on background thread
-        return retrieveWordsAsync();
+        return retrieveWordsAsync(strings[0]);
     }
 
     @Override
@@ -47,9 +45,9 @@ public class RetrieveWordsAsyncTask extends AsyncTask<Void, Void, ArrayList<Word
         // Executed on UI Thread
     }
 
-    private ArrayList<Word> retrieveWordsAsync(){
+    private ArrayList<Word> retrieveWordsAsync(String query){
         Log.d(TAG, "retrieveWordsAsync: retrieving words. This is from thread: " + Thread.currentThread().getName());
-        return new ArrayList<>(mDb.wordDataDao().getWords(mQuery));
+        return new ArrayList<>(mDb.wordDataDao().getWords(query));
     }
 
 }
