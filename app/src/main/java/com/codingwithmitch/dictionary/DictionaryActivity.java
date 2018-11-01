@@ -22,8 +22,10 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.threading.DeleteWordAsyncTask;
 import com.codingwithmitch.dictionary.threading.DeleteWordRunnable;
 import com.codingwithmitch.dictionary.threading.MyThread;
+import com.codingwithmitch.dictionary.threading.RetrieveWordsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
@@ -109,6 +111,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
+        new RetrieveWordsAsyncTask(this).execute(title);
     }
 
 
@@ -118,7 +121,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-
+        new DeleteWordAsyncTask(this).execute(word);
     }
 
 

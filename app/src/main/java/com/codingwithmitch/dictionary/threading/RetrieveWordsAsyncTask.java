@@ -43,6 +43,7 @@ public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Wo
     protected void onPostExecute(ArrayList<Word> words) {
         super.onPostExecute(words);
         // Executed on UI Thread
+
     }
 
     private ArrayList<Word> retrieveWordsAsync(String query){
