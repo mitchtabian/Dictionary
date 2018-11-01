@@ -22,14 +22,16 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
-import com.codingwithmitch.dictionary.threading.MyThread;
+
+import com.codingwithmitch.dictionary.threading.DeleteWordRunnable;
+import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
 import com.codingwithmitch.dictionary.util.Constants;
-import com.codingwithmitch.dictionary.util.FakeData;
+
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+
 
 
 public class DictionaryActivity extends AppCompatActivity implements
@@ -51,6 +53,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private HandlerThread mHandlerThread;
+    private Handler mMainThreadHandler;
 
 
     @Override
@@ -66,6 +69,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
+        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -90,6 +94,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         super.onStart();
         mHandlerThread = new HandlerThread("DictionaryActivity HandlerThread");
         mHandlerThread.start();
+
     }
 
     @Override
@@ -99,7 +104,6 @@ public class DictionaryActivity extends AppCompatActivity implements
         mHandlerThread.quit();
 //        mHandlerThread.quitSafely();
     }
-
 
     @Override
     protected void onResume() {
@@ -112,8 +116,9 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
+        Handler backgroundHandler = new Handler(mHandlerThread.getLooper());
+        backgroundHandler.post(new RetrieveWordsRunnable(this, mMainThreadHandler, title));
     }
-
 
     public void deleteWord(Word word) {
         Log.d(TAG, "deleteWord: called.");
@@ -121,9 +126,9 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-
+        Handler backgroundHandler = new Handler(mHandlerThread.getLooper());
+        backgroundHandler.post(new DeleteWordRunnable(this, mMainThreadHandler, word));
     }
-
 
 
     private void setupRecyclerView(){
