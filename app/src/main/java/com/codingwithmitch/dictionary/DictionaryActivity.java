@@ -27,6 +27,7 @@ import com.codingwithmitch.dictionary.threading.DeleteWordRunnable;
 import com.codingwithmitch.dictionary.threading.MyThread;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
+import com.codingwithmitch.dictionary.threading.TaskDelegate;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
@@ -39,7 +40,8 @@ import java.util.Arrays;
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener
+        SwipeRefreshLayout.OnRefreshListener,
+        TaskDelegate
 {
 
     private static final String TAG = "DictionaryActivity";
@@ -111,7 +113,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
-        new RetrieveWordsAsyncTask(this).execute(title);
+        new RetrieveWordsAsyncTask(this,this).execute(title);
     }
 
 
@@ -233,6 +235,13 @@ public class DictionaryActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onWordsRetrieved(ArrayList<Word> words) {
+        clearWords();
+
+        mWords.addAll(words);
+        mWordRecyclerAdapter.notifyDataSetChanged();
+    }
 }
 
 

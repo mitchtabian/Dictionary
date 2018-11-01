@@ -7,6 +7,7 @@ import android.util.Log;
 import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.persistence.AppDatabase;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Word>> {
@@ -14,10 +15,12 @@ public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Wo
     private static final String TAG = "RetrieveWordsAsyncTask";
 
     private AppDatabase mDb;
+    private WeakReference<TaskDelegate> mDelegate;
 
-    public RetrieveWordsAsyncTask(Context context) {
+    public RetrieveWordsAsyncTask(Context context, TaskDelegate delegate) {
         super();
         mDb = AppDatabase.getDatabase(context);
+        mDelegate = new WeakReference<>(delegate);
     }
 
     @Override
@@ -43,7 +46,7 @@ public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Wo
     protected void onPostExecute(ArrayList<Word> words) {
         super.onPostExecute(words);
         // Executed on UI Thread
-
+        mDelegate.get().onWordsRetrieved(words);
     }
 
     private ArrayList<Word> retrieveWordsAsync(String query){

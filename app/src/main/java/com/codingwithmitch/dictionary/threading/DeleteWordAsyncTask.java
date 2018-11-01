@@ -44,6 +44,7 @@ public class DeleteWordAsyncTask extends AsyncTask<Word, Void, Integer> {
     protected void onPostExecute(Integer value) {
         super.onPostExecute(value);
         // Executed on UI Thread
+
     }
 
     private Integer deleteWord(Word word){
