@@ -229,7 +229,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mSwipeRefresh.setRefreshing(false);
     }
 
-   
+
 }
 
 

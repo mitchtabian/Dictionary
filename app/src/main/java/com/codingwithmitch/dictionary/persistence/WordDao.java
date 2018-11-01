@@ -22,7 +22,7 @@ public interface WordDao {
     long[] insertWords(Word... words);
 
     @Delete
-    int delete(Word note);
+    int delete(Word word);
 
     @Query("UPDATE Word SET title = :title, content = :content, timestamp = :timestamp WHERE uid = :uid")
     int updateWord(String title, String content, String timestamp, int uid);
