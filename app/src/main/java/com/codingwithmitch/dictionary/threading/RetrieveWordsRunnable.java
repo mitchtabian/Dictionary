@@ -22,36 +22,27 @@ public class RetrieveWordsRunnable implements Runnable {
     private AppDatabase mDb;
     private String mQuery;
 
-    public RetrieveWordsRunnable(Context context, Handler mainThreadHandler, String query) {
-        mMainThreadHandler = mainThreadHandler;
+
+    public RetrieveWordsRunnable(Context context, Handler mMainThreadHandler, String mQuery) {
+        this.mMainThreadHandler = mMainThreadHandler;
+        this.mQuery = mQuery;
         mDb = AppDatabase.getDatabase(context);
-        mQuery = query;
     }
 
     @Override
     public void run() {
-        Log.d(TAG, "run: retrieving words. This is from thread: " + Looper.myLooper().getThread().getName());
+        Log.d(TAG, "run: retrieving words. This is from thread: " + Thread.currentThread().getName());
         ArrayList<Word> words = new ArrayList<>(mDb.wordDataDao().getWords(mQuery));
         Message message = null;
-        if(words.size() > 0){
+        if (words.size() > 0) {
             message = Message.obtain(null, Constants.WORDS_RETRIEVE_SUCCESS);
             Bundle bundle = new Bundle();
             bundle.putParcelableArrayList("words_retrieve", words);
             message.setData(bundle);
-        }
-        else{
+        } else {
             message = Message.obtain(null, Constants.WORDS_RETRIEVE_FAIL);
         }
+
         mMainThreadHandler.sendMessage(message);
     }
 }
-
-
-
-
-
-
-
-
-
-
