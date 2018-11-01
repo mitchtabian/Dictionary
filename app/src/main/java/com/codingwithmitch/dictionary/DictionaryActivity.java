@@ -37,8 +37,7 @@ import java.util.Arrays;
 public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener,
-        Handler.Callback
+        SwipeRefreshLayout.OnRefreshListener
 {
 
     private static final String TAG = "DictionaryActivity";
@@ -52,8 +51,6 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
-    private HandlerThread mHandlerThread;
-    private Handler mMainThreadHandler;
 
 
     @Override
@@ -68,8 +65,6 @@ public class DictionaryActivity extends AppCompatActivity implements
 
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
-
-        mMainThreadHandler = new Handler(this);
 
         setupRecyclerView();
     }
@@ -92,16 +87,14 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStart() {
         Log.d(TAG, "onStart: called.");
         super.onStart();
-        mHandlerThread = new HandlerThread("DictionaryActivity HandlerThread");
-        mHandlerThread.start();
+
     }
 
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop: called.");
         super.onStop();
-        mHandlerThread.quit();
-//        mHandlerThread.quitSafely();
+
     }
 
 
@@ -116,8 +109,6 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
-        Handler backgroundHandler = new Handler(mHandlerThread.getLooper());
-        backgroundHandler.post(new RetrieveWordsRunnable(this, mMainThreadHandler, title));
     }
 
 
@@ -127,8 +118,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
-        Handler backgroundHandler = new Handler(mHandlerThread.getLooper());
-        backgroundHandler.post(new DeleteWordRunnable(this, mMainThreadHandler, word));
+
     }
 
 
@@ -239,55 +229,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mSwipeRefresh.setRefreshing(false);
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        switch (msg.what){
-
-            case Constants.WORDS_RETRIEVE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully retrieved words. This is from thread: " + Thread.currentThread().getName());
-
-                clearWords();
-
-                ArrayList<Word> words = new ArrayList<>(msg.getData().<Word>getParcelableArrayList("words_retrieve"));
-                mWords.addAll(words);
-                mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
-                break;
-            }
-
-            case Constants.WORDS_RETRIEVE_FAIL:{
-                Log.d(TAG, "handleMessage: unable to retrieve words. This is from thread: " + Thread.currentThread().getName());
-
-                clearWords();
-                break;
-            }
-
-            case Constants.WORD_INSERT_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully inserted new word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_INSERT_FAIL:{
-                Log.d(TAG, "handleMessage: unable to insert new word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_DELETE_SUCCESS:{
-                Log.d(TAG, "handleMessage: successfully deleted a word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-            case Constants.WORD_DELETE_FAIL:{
-                Log.d(TAG, "handleMessage: unable to delete word. This is from thread: " + Thread.currentThread().getName());
-
-                break;
-            }
-
-        }
-        return true;
-    }
+   
 }
 
 
