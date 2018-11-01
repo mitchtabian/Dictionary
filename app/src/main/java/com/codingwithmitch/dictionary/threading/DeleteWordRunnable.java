@@ -11,6 +11,7 @@ import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.persistence.AppDatabase;
 import com.codingwithmitch.dictionary.util.Constants;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 
@@ -18,12 +19,12 @@ public class DeleteWordRunnable implements Runnable {
 
     private static final String TAG = "RetrieveWordsRunnable";
 
-    private Handler mMainThreadHandler;
+    private WeakReference<Handler> mMainThreadHandler;
     private AppDatabase mDb;
     private Word mWord;
 
     public DeleteWordRunnable(Context context, Handler mainThreadHandler, Word word) {
-        mMainThreadHandler = mainThreadHandler;
+        mMainThreadHandler = new WeakReference<>(mainThreadHandler);
         mDb = AppDatabase.getDatabase(context);
         mWord = word;
     }
@@ -38,7 +39,7 @@ public class DeleteWordRunnable implements Runnable {
             message = Message.obtain(null, Constants.WORD_DELETE_FAIL);
         }
 
-        mMainThreadHandler.sendMessage(message);
+        mMainThreadHandler.get().sendMessage(message);
     }
 }
 
