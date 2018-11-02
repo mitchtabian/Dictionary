@@ -278,9 +278,24 @@ public class DictionaryActivity extends AppCompatActivity implements
     public void onRowsRetrieved(int numRows) {
         Log.d(TAG, "onRowsRetrieved: num rows: " + numRows);
         mNumRows = numRows;
+        executeThreadPool();
 
     }
 
+    private void executeThreadPool(){
+        int numTasks = Runtime.getRuntime().availableProcessors();
+        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+        for(int i = 0; i <= numTasks; i++){
+            Log.d(TAG, "Starting query at: row#: " + (mNumRows / numTasks)*i);
+            ThreadPoolRunnable runnable = new ThreadPoolRunnable(
+                    this,
+                    mMainThreadHandler,
+                    (mNumRows / numTasks)*i,
+                    (mNumRows / numTasks)
+            );
+            mExecutorService.submit(runnable);
+        }
+    }
 
     @Override
     public boolean handleMessage(Message message) {
