@@ -35,6 +35,8 @@ import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class DictionaryActivity extends AppCompatActivity implements
@@ -56,6 +58,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private DeleteWordAsyncTask mDeleteWordAsyncTask;
+    private ExecutorService mExecutorService = null;
 
 
     @Override
@@ -71,9 +74,16 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
+        initExecutorThreadPool();
+        
         setupRecyclerView();
     }
 
+    private void initExecutorThreadPool(){
+        int numProcessors = Runtime.getRuntime().availableProcessors();
+        Log.d(TAG, "initExecutorThreadPool: processors: " + numProcessors);
+        mExecutorService = Executors.newFixedThreadPool(numProcessors);
+    }
 
     private void restoreInstanceState(Bundle savedInstanceState){
         if(savedInstanceState != null){
