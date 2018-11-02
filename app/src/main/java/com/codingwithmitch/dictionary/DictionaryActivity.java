@@ -99,8 +99,14 @@ public class DictionaryActivity extends AppCompatActivity implements
     protected void onStop() {
         Log.d(TAG, "onStop: called.");
         super.onStop();
-        mRetrieveWordsAsyncTask.cancel(true);
-        mDeleteWordAsyncTask.cancel(true);
+
+        if(mRetrieveWordsAsyncTask != null){
+            mRetrieveWordsAsyncTask.cancel(true);
+        }
+
+        if(mDeleteWordAsyncTask != null){
+            mDeleteWordAsyncTask.cancel(true);
+        }
     }
 
 
