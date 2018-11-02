@@ -55,7 +55,6 @@ public class DictionaryActivity extends AppCompatActivity implements
     private WordsRecyclerAdapter mWordRecyclerAdapter;
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
-    private RetrieveWordsAsyncTask mRetrieveWordsAsyncTask;
     private DeleteWordAsyncTask mDeleteWordAsyncTask;
 
 
@@ -100,10 +99,6 @@ public class DictionaryActivity extends AppCompatActivity implements
         Log.d(TAG, "onStop: called.");
         super.onStop();
 
-        if(mRetrieveWordsAsyncTask != null){
-            mRetrieveWordsAsyncTask.cancel(true);
-        }
-
         if(mDeleteWordAsyncTask != null){
             mDeleteWordAsyncTask.cancel(true);
         }
@@ -121,11 +116,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
-        if(mRetrieveWordsAsyncTask != null){
-            mRetrieveWordsAsyncTask.cancel(true);
-        }
-        mRetrieveWordsAsyncTask = new RetrieveWordsAsyncTask(this, this);
-        mRetrieveWordsAsyncTask.execute(title);
+
     }
 
 
