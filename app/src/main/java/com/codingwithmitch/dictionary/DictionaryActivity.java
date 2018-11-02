@@ -115,6 +115,9 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
+        if(mRetrieveWordsAsyncTask != null){
+            mRetrieveWordsAsyncTask.cancel(true);
+        }
         mRetrieveWordsAsyncTask = new RetrieveWordsAsyncTask(this, this);
         mRetrieveWordsAsyncTask.execute(title);
     }
@@ -126,6 +129,9 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWordRecyclerAdapter.getFilteredWords().remove(word);
         mWordRecyclerAdapter.notifyDataSetChanged();
 
+        if(mDeleteWordAsyncTask != null){
+            mDeleteWordAsyncTask.cancel(true);
+        }
         mDeleteWordAsyncTask = new DeleteWordAsyncTask(this);
         mDeleteWordAsyncTask.execute(word);
     }
