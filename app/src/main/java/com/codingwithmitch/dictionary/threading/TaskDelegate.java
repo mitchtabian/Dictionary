@@ -7,4 +7,6 @@ import java.util.ArrayList;
 public interface TaskDelegate {
 
     void onWordsRetrieved(ArrayList<Word> words);
+
+    void onRowsRetrieved(int numRows);
 }
