@@ -33,6 +33,7 @@ public class RetrieveWordsAsyncTask extends AsyncTask<String, Void, ArrayList<Wo
     protected ArrayList<Word> doInBackground(String... strings) {
 
         // Done on background thread
+
         return retrieveWordsAsync(strings[0]);
     }
 
