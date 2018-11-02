@@ -25,6 +25,7 @@ import com.codingwithmitch.dictionary.models.Word;
 import com.codingwithmitch.dictionary.threading.DeleteWordAsyncTask;
 import com.codingwithmitch.dictionary.threading.DeleteWordRunnable;
 import com.codingwithmitch.dictionary.threading.MyThread;
+import com.codingwithmitch.dictionary.threading.RetrieveRowsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
 import com.codingwithmitch.dictionary.threading.TaskDelegate;
@@ -58,8 +59,9 @@ public class DictionaryActivity extends AppCompatActivity implements
     private FloatingActionButton mFab;
     private String mSearchQuery = "";
     private DeleteWordAsyncTask mDeleteWordAsyncTask;
+    private RetrieveRowsAsyncTask mRetrieveRowsAsyncTask;
     private ExecutorService mExecutorService = null;
-
+    private int mNumRows = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mSwipeRefresh.setOnRefreshListener(this);
 
         initExecutorThreadPool();
-        
+
         setupRecyclerView();
     }
 
@@ -112,6 +114,10 @@ public class DictionaryActivity extends AppCompatActivity implements
         if(mDeleteWordAsyncTask != null){
             mDeleteWordAsyncTask.cancel(true);
         }
+
+        if(mRetrieveRowsAsyncTask != null){
+            mRetrieveRowsAsyncTask.cancel(true);
+        }
     }
 
 
@@ -126,7 +132,11 @@ public class DictionaryActivity extends AppCompatActivity implements
     private void retrieveWords(String title) {
         Log.d(TAG, "retrieveWords: called.");
 
-
+        if(mRetrieveRowsAsyncTask != null){
+            mRetrieveRowsAsyncTask.cancel(true);
+        }
+        mRetrieveRowsAsyncTask = new RetrieveRowsAsyncTask(this,this);
+        mRetrieveRowsAsyncTask.execute();
     }
 
 
@@ -259,6 +269,19 @@ public class DictionaryActivity extends AppCompatActivity implements
         mWords.addAll(words);
         mWordRecyclerAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    public void onRowsRetrieved(int numRows) {
+        Log.d(TAG, "onRowsRetrieved: num rows: " + numRows);
+        mNumRows = numRows;
+    }
 }
+
+
+
+
+
+
+
 
 
