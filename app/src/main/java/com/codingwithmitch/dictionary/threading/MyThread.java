@@ -92,6 +92,14 @@ public class MyThread extends Thread {
 
     }
 
+    private void insertWords(){
+        for(int i = 0; i < 50000; i++){
+            saveNewWord(new Word("word " + i, "some random text", Utility.getCurrentTimeStamp()));
+        }
+    }
+
+
+
     class MyThreadHandler extends Handler {
 
         public MyThreadHandler(Looper looper) {
@@ -113,6 +121,8 @@ public class MyThread extends Thread {
                         message = Message.obtain(null, Constants.WORD_INSERT_FAIL);
                     }
                     mMainThreadHandler.sendMessage(message);
+
+//                    insertWords();
 
                     break;
                 }

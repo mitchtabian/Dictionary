@@ -22,16 +22,15 @@ import android.view.View;
 
 import com.codingwithmitch.dictionary.adapters.WordsRecyclerAdapter;
 import com.codingwithmitch.dictionary.models.Word;
+import com.codingwithmitch.dictionary.persistence.AppDatabase;
 import com.codingwithmitch.dictionary.threading.DeleteWordAsyncTask;
-import com.codingwithmitch.dictionary.threading.DeleteWordRunnable;
-import com.codingwithmitch.dictionary.threading.MyThread;
+
 import com.codingwithmitch.dictionary.threading.RetrieveRowsAsyncTask;
-import com.codingwithmitch.dictionary.threading.RetrieveWordsAsyncTask;
-import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
+
 import com.codingwithmitch.dictionary.threading.TaskDelegate;
 import com.codingwithmitch.dictionary.threading.ThreadPoolRunnable;
 import com.codingwithmitch.dictionary.util.Constants;
-import com.codingwithmitch.dictionary.util.FakeData;
+
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
 
 import java.lang.reflect.Array;
@@ -39,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 
 
 public class DictionaryActivity extends AppCompatActivity implements
@@ -66,6 +66,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private int mNumRows = 0;
     private Handler mMainThreadHandler;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +90,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         int numProcessors = Runtime.getRuntime().availableProcessors();
         Log.d(TAG, "initExecutorThreadPool: processors: " + numProcessors);
         mExecutorService = Executors.newFixedThreadPool(numProcessors);
+
     }
 
     private void restoreInstanceState(Bundle savedInstanceState){
@@ -122,6 +124,12 @@ public class DictionaryActivity extends AppCompatActivity implements
         if(mRetrieveRowsAsyncTask != null){
             mRetrieveRowsAsyncTask.cancel(true);
         }
+
+        if(mExecutorService != null){
+            if(!mExecutorService.isShutdown()){
+                mExecutorService.shutdownNow();
+            }
+        }
     }
 
 
@@ -141,6 +149,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         }
         mRetrieveRowsAsyncTask = new RetrieveRowsAsyncTask(this,this);
         mRetrieveRowsAsyncTask.execute();
+
     }
 
 
@@ -268,6 +277,7 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     @Override
     public void onWordsRetrieved(ArrayList<Word> words) {
+
         clearWords();
 
         mWords.addAll(words);
@@ -284,7 +294,6 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     private void executeThreadPool(){
         int numTasks = Runtime.getRuntime().availableProcessors();
-        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
         for(int i = 0; i <= numTasks; i++){
             Log.d(TAG, "Starting query at: row#: " + (mNumRows / numTasks)*i);
             ThreadPoolRunnable runnable = new ThreadPoolRunnable(

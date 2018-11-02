@@ -31,7 +31,7 @@ public class ThreadPoolRunnable implements Runnable {
 
     @Override
     public void run() {
-        Log.d(TAG, "retrieveSomeWords: retrieving some notes. This is from thread: " + Thread.currentThread().getName());
+        Log.d(TAG, "retrieveSomeWords: retrieving some words. This is from thread: " + Thread.currentThread().getName());
         ArrayList<Word> words = new ArrayList<>(mDb.wordDataDao().getSomeWords(mStartingIndex, mChunkSize));
         Message message = Message.obtain(null, Constants.MSG_THREAD_POOL_TASK_COMPLETE);
         Bundle bundle = new Bundle();
