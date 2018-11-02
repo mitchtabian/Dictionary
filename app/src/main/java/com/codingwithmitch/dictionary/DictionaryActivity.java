@@ -29,6 +29,7 @@ import com.codingwithmitch.dictionary.threading.RetrieveRowsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsAsyncTask;
 import com.codingwithmitch.dictionary.threading.RetrieveWordsRunnable;
 import com.codingwithmitch.dictionary.threading.TaskDelegate;
+import com.codingwithmitch.dictionary.threading.ThreadPoolRunnable;
 import com.codingwithmitch.dictionary.util.Constants;
 import com.codingwithmitch.dictionary.util.FakeData;
 import com.codingwithmitch.dictionary.util.VerticalSpacingItemDecorator;
@@ -44,7 +45,8 @@ public class DictionaryActivity extends AppCompatActivity implements
         WordsRecyclerAdapter.OnWordListener,
         View.OnClickListener,
         SwipeRefreshLayout.OnRefreshListener,
-        TaskDelegate
+        TaskDelegate,
+        Handler.Callback
 {
 
     private static final String TAG = "DictionaryActivity";
@@ -62,6 +64,7 @@ public class DictionaryActivity extends AppCompatActivity implements
     private RetrieveRowsAsyncTask mRetrieveRowsAsyncTask;
     private ExecutorService mExecutorService = null;
     private int mNumRows = 0;
+    private Handler mMainThreadHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         mFab.setOnClickListener(this);
         mSwipeRefresh.setOnRefreshListener(this);
 
+        mMainThreadHandler = new Handler(this);
         initExecutorThreadPool();
 
         setupRecyclerView();
@@ -274,6 +278,27 @@ public class DictionaryActivity extends AppCompatActivity implements
     public void onRowsRetrieved(int numRows) {
         Log.d(TAG, "onRowsRetrieved: num rows: " + numRows);
         mNumRows = numRows;
+
+    }
+
+
+    @Override
+    public boolean handleMessage(Message message) {
+
+        switch (message.what){
+
+            case Constants.MSG_THREAD_POOL_TASK_COMPLETE:{
+                ArrayList<Word> words = message.getData().getParcelableArrayList("word_data_from_thread_pool");
+                mWords.addAll(words);
+                mWordRecyclerAdapter.getFilter().filter(mSearchQuery);
+
+                Log.d(TAG, "handleMessage: recieved some words: " + words.size());
+                Log.d(TAG, "handleMessage: total words: " + mWords.size());
+                break;
+            }
+
+        }
+        return false;
     }
 }
 

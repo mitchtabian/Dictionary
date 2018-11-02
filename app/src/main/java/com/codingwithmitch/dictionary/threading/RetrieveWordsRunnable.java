@@ -32,7 +32,7 @@ public class RetrieveWordsRunnable implements Runnable {
 
     @Override
     public void run() {
-        Log.d(TAG, "run: retrieving words. This is from thread: " + Thread.currentThread().getName());
+        Log.d(TAG, "retrieveWords: retrieving words. This is from thread: " + Thread.currentThread().getName());
         ArrayList<Word> words = new ArrayList<>(mDb.wordDataDao().getWords(mQuery));
         Message message = null;
         if (words.size() > 0) {
@@ -46,4 +46,13 @@ public class RetrieveWordsRunnable implements Runnable {
 
         mMainThreadHandler.get().sendMessage(message);
     }
+
 }
+
+
+
+
+
+
+
+
