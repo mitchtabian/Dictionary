@@ -122,6 +122,7 @@ public class DictionaryActivity extends AppCompatActivity implements
         if(mRetrieveRowsAsyncTask != null){
             mRetrieveRowsAsyncTask.cancel(true);
         }
+		mExecutorService.shutdownNow();
     }
 
 
