@@ -284,14 +284,20 @@ public class DictionaryActivity extends AppCompatActivity implements
 
     private void executeThreadPool(){
         int numTasks = Runtime.getRuntime().availableProcessors();
-        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+
+        int chunkSize = (mNumRows % numTasks) != 0 ?
+                (int) Math.ceil((double)mNumRows / (double)numTasks) : (int) Math.floor((double)mNumRows / (double)numTasks);
+        Log.d(TAG, "executeThreadPool: chunksize: " + chunkSize);
+
         for(int i = 0; i <= numTasks; i++){
-            Log.d(TAG, "Starting query at: row#: " + (mNumRows / numTasks)*i);
+            Log.d(TAG, "executeThreadPool: starting query at: row#" + (chunkSize * i));
+
+
             ThreadPoolRunnable runnable = new ThreadPoolRunnable(
                     this,
                     mMainThreadHandler,
-                    (mNumRows / numTasks)*i,
-                    (mNumRows / numTasks)
+                    chunkSize * i,
+                    chunkSize
             );
             mExecutorService.submit(runnable);
         }
