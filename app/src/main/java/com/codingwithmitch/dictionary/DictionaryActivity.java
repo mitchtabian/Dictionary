@@ -283,6 +283,8 @@ public class DictionaryActivity extends AppCompatActivity implements
     }
 
     private void executeThreadPool(){
+		clearWords();
+		
         int numTasks = Runtime.getRuntime().availableProcessors();
 
         int chunkSize = (mNumRows % numTasks) != 0 ?
